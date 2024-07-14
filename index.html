@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diário de Troca de Turno</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .form-container {
+            flex: 1;
+            max-width: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .entries-container {
+            flex: 1;
+            max-width: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+        }
+
+        @media(min-width: 768px) {
+            h1 {
+                font-size: 32px;
+            }
+            h2 {
+                font-size: 28px;
+            }
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 16px;
+        }
+
+        input, textarea, select {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #007BFF;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        #copy-button {
+            margin-top: 10px;
+            background: #28a745;
+        }
+
+        #copy-button:hover {
+            background: #218838;
+        }
+
+        .entry {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1>Diário de Troca de Turno</h1>
+            <form id="diario-form">
+                <label for="inc-number">Número do INC:</label>
+                <input type="text" id="inc-number" name="inc-number" required>
+
+                <label for="status">Status:</label>
+                <select id="status" name="status" required>
+                    <option value="aberto">Aberto</option>
+                    <option value="em-andamento">Em Andamento</option>
+                    <option value="resolvido">Resolvido</option>
+                    <option value="fechado">Fechado</option>
+                </select>
+
+                <label for="comments">Comentários:</label>
+                <textarea id="comments" name="comments" rows="5" required></textarea>
+
+                <button type="submit">Adicionar Entrada</button>
+            </form>
+        </div>
+        <div class="entries-container">
+            <h2>Entradas Recentes</h2>
+            <div id="entries">
+                <!-- Entradas serão adicionadas aqui -->
+            </div>
+            <button id="copy-button">Copiar Todos os INCs</button>
+        </div>
+    </div>
+
+    <script>
+        function getCurrentDateTime() {
+            const currentDate = new Date();
+            const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
+            return formattedDate;
+        }
+
+        document.getElementById('diario-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Coletar dados do formulário
+            const incNumber = document.getElementById('inc-number').value;
+            const status = document.getElementById('status').value;
+            const comments = document.getElementById('comments').value;
+
+            // Criar nova entrada
+            const entry = document.createElement('div');
+            entry.classList.add('entry');
+            entry.innerHTML = `
+                <p><strong>Número do INC:</strong> ${incNumber}</p>
+                <p><strong>Status:</strong> ${status}</p>
+                <p><strong>Comentários:</strong> ${comments}</p>
+            `;
+
+            // Adicionar entrada ao container
+            document.getElementById('entries').appendChild(entry);
+
+            // Limpar formulário
+            document.getElementById('diario-form').reset();
+        });
+
+        document.getElementById('copy-button').addEventListener('click', function() {
+            const entries = document.querySelectorAll('.entry');
+            let incDetails = [];
+
+            // Adiciona a máscara e a data/hora de geração do resultado
+            incDetails.push(`*${getCurrentDateTime()}* Passagem de Turno T2>T3`);
+
+            entries.forEach((entry, index) => {
+                const incNumber = entry.querySelector('p:nth-child(1)').textContent.split(': ')[1];
+                const status = entry.querySelector('p:nth-child(2)').textContent.split(': ')[1];
+                const comments = entry.querySelector('p:nth-child(3)').textContent.split(': ')[1];
+                incDetails.push(`${index + 1} - INC\nStatus: ${status}\nComentários: ${comments}`);
+            });
+
+            const incDetailsText = incDetails.join('\n\n');
+            navigator.clipboard.writeText(incDetailsText).then(() => {
+                alert('Todos os INCs foram copiados para a área de transferência.');
+            });
+        });
+    </script>
+</body>
+</html>
